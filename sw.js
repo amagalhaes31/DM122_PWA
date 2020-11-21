@@ -1,6 +1,7 @@
-const cacheName = 'app-shell-v1';
+const cacheName = 'app-shell-v2';
 const assetsToCache = [
     'offline.html',
+    'index.html',
 ];
 
 
@@ -17,8 +18,24 @@ self.addEventListener('install', event => {
 });
   
 
+function removeOldCache(cacheKey) {
+    if (cacheKey !== cacheName) {
+        console.log('[Service Worker] removing old cache');
+        return caches.delete(cacheKey);
+    }
+}
+
+
+async function cacheCleanup() {
+    const keyList = await caches.keys();
+    return Promise.all(keyList.map(removeOldCache));
+}
+
+
 self.addEventListener('activate', event => {
     console.log('[Service Worker] activating service worker ...');
+    event.waitUntil(cacheCleanup());
+    self.clients.claim();
 })
 
 
